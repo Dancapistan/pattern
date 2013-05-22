@@ -79,7 +79,118 @@
 
   var Pattern = (function () {
 
+    /**
+     * @constructor
+     */
+    function Pattern(pattern) {
+      if ( this instanceof Pattern ) {
+        this.symbols = _compile(pattern);
+      } else {
+        // Make Pattern safe to call with or without the `new` keyword.
+        return new Pattern(pattern);
+      }
+    }
 
+    /**
+     * @expose
+     */
+    Pattern.prototype.build = function( table ) {
+      var length
+        , retval
+        , i
+        ;
+
+      retval = '';
+      length = this.symbols.length;
+
+      for ( i = 0; i < length ; i += 1) {
+        retval += this.symbols[i].getValue( table );
+      }
+
+      return retval;
+    };
+
+    /**
+     * Converts a `pattern` string into an array of Symbol objects.
+     * @param  {string} pattern the pattern to be parsed
+     * @return {Array.<Symbol>} the symbols in the pattern
+     * @private
+     */
+    function _compile ( pattern ) {
+      var char_objects_list  // A list of characters in the pattern.
+        , string_accumulator // The current symbol.
+        , retarray           // An array of Symbol instances.
+        , length             // Number of characters in char_objects_list.
+        , next               // The next character.
+        , cur                // The current character.
+        , i
+        ;
+
+
+      char_objects_list = _convert_to_list ( pattern );
+      length = char_objects_list.length;
+      retarray = [];
+
+
+      if ( length === 0 ) {
+        // If there are no characters, there are no symbols.
+        return retarray;
+      }
+
+
+      // This is the value of the current symbol, either a string
+      // literal or a substitution identifier.
+      string_accumulator = '';
+
+
+      for ( i = 0 ; i < length ; i += 1 ) {
+
+
+
+        // store the current value in the current symbol
+
+        cur = char_objects_list[i];
+        string_accumulator += cur.val;
+
+
+
+        // Store and reset the accumulator if we're at the end of the symbol.
+
+        next = char_objects_list[i + 1]; // next can safely be undefined, which
+                                         // happens when we're at the end of the
+                                         // list.
+
+        if ( _at_end_of_symbol ( cur , next ) ) {
+          retarray.push(_newSymbol(string_accumulator, cur.sub));
+          string_accumulator = '';
+        }
+
+
+      }
+
+      return retarray;
+    }
+
+    /**
+     * Returns true if the current character is the end of the current symbol's
+     * string.
+     *
+     * @param  {object}   cur  the current character object
+     * @param  {object?} next  the next character object (possibly undefined)
+     * @return {boolean}       true if the current character is the end of the
+     *                         symbol
+     * @private
+     */
+    function _at_end_of_symbol ( cur , next ) {
+
+      // No next means we're at the end of the string, which means we're
+      // at the end of the symbol.
+      if ( ! next ) return true;
+
+      // If the next's SID isn't the same as the current symbol ID, then
+      // we're at the end of the symbol.
+      return next.sid !== cur.sid;
+    }
 
     /**
      * Converts a string `pattern` into an array of characters that know if
@@ -178,119 +289,6 @@
 
       return symbols_list;
     }
-
-    /**
-     * Returns true if the current character is the end of the current symbol's
-     * string.
-     *
-     * @param  {object}   cur  the current character object
-     * @param  {object?} next  the next character object (possibly undefined)
-     * @return {boolean}       true if the current character is the end of the
-     *                         symbol
-     * @private
-     */
-    function _at_end_of_symbol ( cur , next ) {
-
-      // No next means we're at the end of the string, which means we're
-      // at the end of the symbol.
-      if ( ! next ) return true;
-
-      // If the next's SID isn't the same as the current symbol ID, then
-      // we're at the end of the symbol.
-      return next.sid !== cur.sid;
-    }
-
-    /**
-     * Converts a `pattern` string into an array of Symbol objects.
-     * @param  {string} pattern the pattern to be parsed
-     * @return {Array.<Symbol>} the symbols in the pattern
-     * @private
-     */
-    function _compile ( pattern ) {
-      var char_objects_list  // A list of characters in the pattern.
-        , string_accumulator // The current symbol.
-        , retarray           // An array of Symbol instances.
-        , length             // Number of characters in char_objects_list.
-        , next               // The next character.
-        , cur                // The current character.
-        , i
-        ;
-
-
-      char_objects_list = _convert_to_list ( pattern );
-      length = char_objects_list.length;
-      retarray = [];
-
-
-      if ( length === 0 ) {
-        // If there are no characters, there are no symbols.
-        return retarray;
-      }
-
-
-      // This is the value of the current symbol, either a string
-      // literal or a substitution identifier.
-      string_accumulator = '';
-
-
-      for ( i = 0 ; i < length ; i += 1 ) {
-
-
-
-        // store the current value in the current symbol
-
-        cur = char_objects_list[i];
-        string_accumulator += cur.val;
-
-
-
-        // Store and reset the accumulator if we're at the end of the symbol.
-
-        next = char_objects_list[i + 1]; // next can safely be undefined, which
-                                         // happens when we're at the end of the
-                                         // list.
-
-        if ( _at_end_of_symbol ( cur , next ) ) {
-          retarray.push(_newSymbol(string_accumulator, cur.sub));
-          string_accumulator = '';
-        }
-
-
-      }
-
-      return retarray;
-    }
-
-    /**
-     * @constructor
-     */
-    function Pattern(pattern) {
-      if ( this instanceof Pattern ) {
-        this.symbols = _compile(pattern);
-      } else {
-        // Make Pattern safe to call with or without the `new` keyword.
-        return new Pattern(pattern);
-      }
-    }
-
-    /**
-     * @expose
-     */
-    Pattern.prototype.build = function( table ) {
-      var length
-        , retval
-        , i
-        ;
-
-      retval = '';
-      length = this.symbols.length;
-
-      for ( i = 0; i < length ; i += 1) {
-        retval += this.symbols[i].getValue( table );
-      }
-
-      return retval;
-    };
 
     return Pattern;
 
