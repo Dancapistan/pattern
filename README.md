@@ -59,7 +59,7 @@ Dependencies
 
 None.
 
-The test suite uses [Jasmine](http://pivotal.github.io/jasmine/) and a [Function.bind shim](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind).
+The test suite uses [Jasmine](https://jasmine.github.io/) and a [Function.bind shim](https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Function/bind).
 
 Roadmap
 =======
